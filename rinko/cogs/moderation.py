@@ -18,6 +18,7 @@ from rinko.core.commands.utils import aexec
 
 logger = get_module_logger(__name__)
 
+
 class Moderation(commands.Cog):
     def __init__(self, bot):
         self.rinko: Rinko = bot
@@ -48,7 +49,7 @@ class Moderation(commands.Cog):
         muterole = guild.create_role(name='Muted', color=0xf34323)
         for channel in guild.channels:
             channel: discord.TextChannel
-            overwrite:discord.PermissionOverwrite = channel.overwrites_for(user)
+            overwrite: discord.PermissionOverwrite = channel.overwrites_for(user)
             overwrite.send_messages = False
             await channel.set_permissions(user, overwrite=overwrite, reason=reason)
         embed = discord.Embed(title=f'🔇{user.mention} muted!')
@@ -64,7 +65,6 @@ class Moderation(commands.Cog):
             await channel.set_permissions(user, overwrite=None, reason=reason)
         embed = discord.Embed(f'🔈{user.mention} unmuted!')
         await ctx.send(embed=embed)
-
 
 
 def setup(bot):

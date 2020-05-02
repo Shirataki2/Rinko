@@ -1,10 +1,11 @@
 import logging
 from colorama import Fore, Back, Style
 
+
 class ColoredLogger(logging.Logger):
     @staticmethod
     def _debug(*msgs):
-            return f'{Fore.CYAN}{", ".join(msgs)}{Style.RESET_ALL}'
+        return f'{Fore.CYAN}{", ".join(msgs)}{Style.RESET_ALL}'
 
     @staticmethod
     def _info(*msgs):
@@ -37,6 +38,7 @@ class ColoredLogger(logging.Logger):
     def critical(self, msg, *args, **kwargs):
         if self.isEnabledFor(logging.CRITICAL):
             return self._log(logging.CRITICAL, self._error(msg), args, **kwargs)
+
 
 def get_module_logger(modname) -> ColoredLogger:
     logging.setLoggerClass(ColoredLogger)

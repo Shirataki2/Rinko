@@ -4,6 +4,7 @@ from rinko.core.logger import get_module_logger
 
 logger = get_module_logger(__name__)
 
+
 class Config:
     cog_folder = "cogs"
     oauth2_url = ""
@@ -33,5 +34,6 @@ class Config:
                 logger.info(f'\t{key}: {config[key]}')
                 setattr(self, key, config[key])
         logger.info('=' * 64)
+
 
 config = Config(argv[1])

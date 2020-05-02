@@ -16,6 +16,8 @@ from rinko.core.commands.help import CustomHelpCommand
 from rinko.core.logger import get_module_logger
 
 logger = get_module_logger(__name__)
+
+
 class RinkoBase(commands.Bot):
     def __init__(self, *args, **kwargs):
         super().__init__(help_command=CustomHelpCommand(), *args, **kwargs)
@@ -151,7 +153,7 @@ class RinkoBase(commands.Bot):
             logger.error('Invoke error')
             title = '😔 Runtime Error'
             embed = discord.Embed(title=f'**{title}**', description=str(error.original),
-                                            color=0xff0000)
+                                  color=0xff0000)
             await ctx.send(embed=embed)
             raise error.original
         else:
@@ -166,14 +168,13 @@ class RinkoBase(commands.Bot):
 
     async def get(self, sql, args=None):
         return await self.__async_get(sql, args)
-        #return self.loop.run_until_complete(self.__async_get(sql, args))
+        # return self.loop.run_until_complete(self.__async_get(sql, args))
 
     @property
     def session(self) -> ClientSession:
         if self._session is None:
             self._session = ClientSession(loop=self.loop)
         return self._session
-
 
     def startup(self):
         logger.info('=*'*29 + '=')

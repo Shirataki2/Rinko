@@ -9,6 +9,7 @@ from discord.ext import commands, tasks
 
 from rinko.core.constant import *
 
+
 class CustomHelpCommand(commands.HelpCommand):
     """The custom help command class for the bot"""
 

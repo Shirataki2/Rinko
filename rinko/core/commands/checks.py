@@ -2,6 +2,7 @@ import discord
 from discord.ext import commands
 from rinko.core.bot.rinko import Rinko
 
+
 def can_ban(**perms):
     def predicate(ctx):
         p: discord.Permissions = ctx.message.author.guild_permissions
@@ -10,6 +11,7 @@ def can_ban(**perms):
         else:
             return False
     return commands.check(predicate)
+
 
 def can_kick(**perms):
     def predicate(ctx):
@@ -20,6 +22,7 @@ def can_kick(**perms):
             return False
     return commands.check(predicate)
 
+
 def can_mute(**perms):
     def predicate(ctx):
         p: discord.Permissions = ctx.message.author.guild_permissions
@@ -29,6 +32,7 @@ def can_mute(**perms):
             return False
     return commands.check(predicate)
 
+
 def can_manage_guild(**perms):
     def predicate(ctx):
         p: discord.Permissions = ctx.message.author.guild_permissions
@@ -37,6 +41,7 @@ def can_manage_guild(**perms):
         else:
             return False
     return commands.check(predicate)
+
 
 def can_manage_message(**perms):
     def predicate(ctx):

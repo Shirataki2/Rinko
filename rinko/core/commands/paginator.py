@@ -14,6 +14,7 @@ from rinko.core.logger import get_module_logger
 
 logger = get_module_logger(__name__)
 
+
 class EmbedPaginator(commands.Paginator):
     def __init__(self, **kwargs):
         super().__init__()
@@ -53,6 +54,7 @@ class EmbedPaginator(commands.Paginator):
             # Add all the applicable emoji to the message
             logger.debug(f"Adding reaction: {repr(emoji)}")
             await message.add_reaction(emoji)
+
         def event_check(reaction_: discord.Reaction, user_: discord.Member) -> bool:
             """Make sure that this reaction is what we want to operate on."""
             no_restrictions = (

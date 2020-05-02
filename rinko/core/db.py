@@ -12,6 +12,7 @@ from rinko.core.logger import get_module_logger
 
 logger = get_module_logger(__name__)
 
+
 class DB:
     def __init__(self, bot, *args, **kwargs):
         self.rinko = bot
