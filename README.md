@@ -1,6 +1,6 @@
-<h2 style="font-size: 38px;text-align: center;">Rinko</h1>
+# Rinko
 
-<p style="font-size: 16px;text-align: center;">Discord Bot for Developers and Enginners</p>
+Discord Bot for Developers and Enginners
 
 ![](https://img.shields.io/badge/Version-0.8.3-green)
 
