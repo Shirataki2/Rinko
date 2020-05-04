@@ -36,8 +36,23 @@ class Command(commands.Cog):
         '''
         Run the source code.
 
+        The source code should be written with the markdown syntax as follows.
+
+        $run
+        \```python
+        print('Hello World')
+        \```
+
+        To receive stdin, write two code blocks like the following.
+        $run
+        \```python
+        print(sum(map(int, input().split())))
+        \```
+        \```
+        5 8 13 21
+        \```
+
         The images in the /images folder are returned as a reply.
-        If multiple images are generated, the first one is selected in dictionary order.
 
         __The source code is executed on the Docker container under the following constraints.__
 
@@ -54,8 +69,6 @@ class Command(commands.Cog):
         **6.** The available memory is 128MB and the swap memory is 256MB.
 
         **7.** The number of characters that can be output to discord is 2000, and the number of lines is 30.
-
-        **8.** With great power comes great responsibility.
         '''
         if sources := re.findall(r'```(.+?)\n(.*?)```', code, re.RegexFlag.DOTALL):
             # stdin check

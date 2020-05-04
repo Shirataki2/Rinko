@@ -5,6 +5,7 @@ import logging
 import asyncio
 import glob
 import random
+import psutil
 import os
 
 from time import perf_counter
@@ -46,6 +47,10 @@ class Utils(commands.Cog):
                         value=f'`{discord_duration:.2f}` ms.')
         embed.add_field(name=f'Message latency is:',
                         value=f'`{message_duration:.2f}` ms.')
+        embed.add_field(name=f'Memory usage is:',
+                        value=f'`{psutil.virtual_memory().percent:.1f}` %.')
+        embed.add_field(name=f'CPU usage is:',
+                        value=f'`{psutil.cpu_percent(interval=1):.1f}` %.')
         await m.edit(embed=embed)
 
     @commands.command()
@@ -107,14 +112,23 @@ class Utils(commands.Cog):
         Displays information about the server.
         '''
         guild: discord.Guild = ctx.guild
+        members = guild.members
+        onlines = len(list(filter(lambda m:m.status==discord.Status.online,members)))
+        idles = len(list(filter(lambda m:m.status==discord.Status.idle,members)))
+        dnds = len(list(filter(lambda m:m.status==discord.Status.dnd,members)))
+        offlines = len(list(filter(lambda m:m.status==discord.Status.offline,members)))
+        emo_on = await guild.fetch_emoji(706276692465025156)
+        emo_id = await guild.fetch_emoji(706276692678934608)
+        emo_dn = await guild.fetch_emoji(706276692674609192)
+        emo_of = await guild.fetch_emoji(706276692662157333)
         embed = discord.Embed(title=f'{guild.name}', colour=0x4060e3)
         embed.set_thumbnail(url=str(guild.icon_url))
         embed.add_field(name='Region', value=f'{guild.region}')
         embed.add_field(name='ID', value=f'{guild.id}')
-        embed.add_field(name='Members', value=f'{len(guild.members)}')
         embed.add_field(name='Owner', value=f'{guild.owner.mention}')
         embed.add_field(name='Text Channels', value=f'{len(guild.text_channels)}')
         embed.add_field(name='Voice Channels', value=f'{len(guild.voice_channels)}')
+        embed.add_field(name='Members', value=f'{len(members)}\n{emo_on} {onlines} {emo_id} {idles} {emo_dn} {dnds} {emo_of} {offlines}', inline=False)
         embed.set_footer(text=f'Created at {guild.created_at.strftime("%Y/%m/%d %H:%M:%S")}')
         await ctx.send(embed=embed)
 
@@ -165,6 +179,9 @@ class Utils(commands.Cog):
 
     @commands.command()
     async def set_autoquote(self, ctx:commands.Context, flag=True):
+        '''
+        Enable/disable the function to say the content of a message automatically when a Discord message link is pasted.
+        '''
         await self.rinko.set_config(ctx.guild, 'enable_quote', bool(flag) )
         await ctx.send(f'**{"En" if bool(flag) else "Dis"}abled** automatic notification of quotes on this server.')
 
@@ -205,6 +222,62 @@ class Utils(commands.Cog):
                 text="{0} at #{1} ({2})".format(message.guild.name, channel.name, timestamp)
             )
             return embed
+
+    @commands.command()
+    @commands.cooldown(1, 180, type=commands.BucketType.guild)
+    async def feedback(self, ctx: commands.Context, *, message):
+        '''
+        Send feedback to the bot's developers.
+        :heart: Please keep the contents under 1500 characters.
+        '''
+        embed = discord.Embed(title='Feedback!')
+        if len(message) > 1500:
+            return
+        embed.description = message
+        embed.add_field(name=f'Guild Name', value=f'{str(ctx.guild)}')
+        embed.add_field(name=f'Guild ID', value=f'{ctx.guild.id}')
+        embed.add_field(name=f'User Name', value=f'{ctx.author.mention}')
+        embed.add_field(name=f'User ID', value=f'{ctx.author.id}')
+        owner = self.rinko.get_user(int(config.owner_id))
+        await owner.send(embed=embed)
+
+    @commands.is_owner()
+    @commands.command(hidden=True)
+    @commands.cooldown(1, 1)
+    async def reload(self, ctx: commands.Context):
+        '''
+        Reloads all extensions.
+        '''
+        self.rinko.get_all_cogs(True)
+        await ctx.send('All extensions has been reloaded.')
+
+    @commands.is_owner()
+    @commands.command(hidden=True)
+    @commands.cooldown(1, 1)
+    async def do(self, ctx, *, code):
+        '''
+        Run python script
+        '''
+        logger.debug(f"Execute Custom Code")
+        await aexec(ctx, self.rinko, f'{code}')
+
+    @commands.is_owner()
+    @commands.command(hidden=True)
+    @commands.cooldown(1, 1)
+    async def sql(self, ctx, type, *, sql):
+        '''
+        Execute SQL Query
+        '''
+        logger.debug(f"Execute Custom Query: {sql}")
+        if type == 'get':
+            if results := await self.rinko.get(sql):
+                table = tabulate.tabulate(results, headers="keys", tablefmt="fancy_grid")
+                return await ctx.send(f'```\n{table}\n```')
+        elif type == 'set':
+            await self.rinko.set(sql)
+        else:
+            raise commands.BadArgument(f'\'type\' must be \'get\' or \'set\'')
+
 
 def setup(bot):
     bot.add_cog(Utils(bot))

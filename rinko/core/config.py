@@ -16,6 +16,8 @@ class Config:
     mysql_db = 'rinko'
     # KEYS
     bot_token = ""
+    yahoo_appid = ""
+    open_weather_apikey = ""
     # FORMATS
     log_level = "WARNING"
 

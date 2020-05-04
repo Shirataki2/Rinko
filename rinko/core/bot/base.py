@@ -1,6 +1,9 @@
 import discord
 from discord.ext import commands
 
+from selenium import webdriver
+from selenium.webdriver.chrome.options import Options
+import MeCab
 import logging
 import asyncio
 import aiomysql
@@ -24,7 +27,17 @@ class RinkoBase(commands.Bot):
         self._session = None
         self.metadata_loop = None
         self.startup()
+        self.tagger = MeCab.Tagger("-d /usr/lib64/mecab/dic/mecab-ipadic-neologd/ -Owakati")
+        # self.driver = self.prepare_webdriver()
         self.get_all_cogs()
+
+    def prepare_webdriver(self):
+        options = Options()
+        options.add_argument('--headless')
+        options.add_argument('--no-sandbox')
+        options.add_argument('--disable-gpu')
+        options.add_argument('--window-size=1280,1024')
+        return webdriver.Chrome(chrome_options=options)
 
     async def setup_db(self):
         try:
