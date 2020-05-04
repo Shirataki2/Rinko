@@ -42,3 +42,27 @@ Table(
     Column('prefix', String(8), default=ColumnDefault('r>')),
     Column('enable_quote', Boolean())
 )
+
+Table(
+    'wallet', meta,
+    Column('guild', String(64), unique=True, nullable=False),
+    Column('user', String(64), nullable=False),
+    Column('money', Integer(), nullable=False),
+    Column('turnip', Integer(), nullable=False),
+    Column('buy_at', DateTime(), nullable=False),
+    Column('rotten_turnip', Integer(), nullable=False),
+)
+
+Table(
+    'works', meta,
+    Column('guild', String(64), nullable=False),
+    Column('user', String(64), nullable=False),
+    Column('date', DateTime(), nullable=False),
+)
+
+Table(
+    'turnip', meta,
+    Column('price', Float(), nullable=False),
+    Column('type', String(20), nullable=False),
+    Column('date', DateTime(), nullable=False),
+)

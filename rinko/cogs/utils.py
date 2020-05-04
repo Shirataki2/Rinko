@@ -16,7 +16,7 @@ from rinko.core.bot.rinko import Rinko
 from rinko.core.logger import get_module_logger
 from rinko.core.config import config
 from rinko.core.commands import checks
-from rinko.core.commands.utils import mention_to_id
+from rinko.core.commands.utils import mention_to_id, aexec
 from rinko.core.constant import *
 
 logger = get_module_logger(__name__)
@@ -170,8 +170,8 @@ class Utils(commands.Cog):
         embed.set_thumbnail(url=str(appinfo.icon_url))
         embed.add_field(name='Version', value=f'**{rinko.__version__}**')
         embed.add_field(name='Developer', value=f'{appinfo.owner.mention}')
-        embed.add_field(name='# of Servers', value=f'{len(bot.guilds)}')
-        embed.add_field(name='# of Users', value=f'{len(bot.users)}')
+        embed.add_field(name='Guilds', value=f'{len(bot.guilds)}')
+        embed.add_field(name='Users', value=f'{len(bot.users)}')
         embed.add_field(name='Shard', value=shard)
         embed.add_field(name='Public/Private', value=f'{"Public" if appinfo.bot_public else "Private" }')
         embed.add_field(name='ID', value=f'{appinfo.id}')

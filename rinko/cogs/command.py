@@ -62,7 +62,7 @@ class Command(commands.Cog):
 
         **3.** The output file size limit is 5MB.
 
-        **4.** The number of available processes is 16.
+        **4.** The number of available processes is 64.
 
         **5.** Network connection is not available.
 
@@ -148,12 +148,11 @@ class Command(commands.Cog):
                     embed.set_image(url=f'attachment://image{ext}')
                     await ctx.send(file=file, embed=embed)
             # await ctx.send(f'Elapsed Time: **{elps:.3f}**s (Includes compile time.)')
-
             shutil.rmtree('/root/discord-dev/run')
 
     async def get_docker_cmd(self, lang, source):
         lang = lang.lower()
-        docker_base = 'docker run -e LANG=C --network none --cpuset-cpus=0 --ulimit fsize=5000000:5000000 --oom-kill-disable --pids-limit=16 --rm -v /root/discord-dev/run/src:/src -v /root/discord-dev/run/images:/images -v /root/discord-dev/run/media:/media -w /src --memory=128m --memory-swap=256m '
+        docker_base = 'docker run -e LANG=C --network none --cpu-period=50000 --cpu-quota=25000 --cpuset-cpus=0 --ulimit fsize=5000000:5000000 --oom-kill-disable --pids-limit=64 --rm -v /root/discord-dev/run/src:/src -v /root/discord-dev/run/images:/images -v /root/discord-dev/run/media:/media -w /src --memory=128m --memory-swap=256m '
         if lang in ['cpp', 'c++']:
             logger.info('Run C++ Code')
             async with aiofiles.open(f'run/src/Main.cpp', 'w') as f:
