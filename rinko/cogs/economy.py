@@ -148,26 +148,26 @@ class Economy(commands.Cog):
             r = random.random()
             s = random.random()
             if type == 'D':
-                if r < 0.17:
-                    rate = random.randint(890, 917) / 1000
+                if r < 0.27:
+                    rate = random.randint(800, 907) / 1000
                 elif r < 0.87:
-                    rate = random.randint(960, 997) / 1000
+                    rate = random.randint(940, 997) / 1000
                 else:
                     rate = random.randint(995, 1038) / 1000
                 if datetime.now().hour in [0, 6, 12, 18] and datetime.now().minute == 0:
                     if s < 0.5:
                         type = 'I'
-                    elif s < 0.68:
+                    elif s < 0.55:
                         type = 'D'
-                    elif s < 0.88:
+                    elif s < 0.65:
                         type = 'S'
                     elif s < 1:
                         type = 'SS'
             if type == 'I':
                 if r < 0.6:
                     rate = random.randint(1008, 1054) / 1000
-                elif r < 0.7:
-                    rate = random.randint(990, 1003) / 1000
+                elif r < 0.9:
+                    rate = random.randint(900, 1103) / 1000
                 else:
                     rate = random.randint(905, 954) / 1000
                 if datetime.now().hour in [0, 4, 8, 12, 16, 20] and datetime.now().minute == 0:
@@ -181,9 +181,9 @@ class Economy(commands.Cog):
                         type = 'SS'
             if type == 'S':
                 if r < 0.3:
-                    rate = random.randint(910, 970) / 1000
+                    rate = random.randint(810, 970) / 1000
                 elif r < 0.9:
-                    rate = random.randint(1030, 1110) / 1000
+                    rate = random.randint(1030, 1190) / 1000
                 else:
                     rate = random.randint(950, 1050) / 1000
                 if datetime.now().hour in [0, 6, 12, 18] and datetime.now().minute == 0:
@@ -198,10 +198,10 @@ class Economy(commands.Cog):
             if type == 'SS':
                 if r < 0.1:
                     rate = random.randint(994, 1004) / 1000
-                elif r < 0.8:
+                elif r < 0.58:
                     rate = random.randint(1060, 1160) / 1000
                 else:
-                    rate = random.randint(860, 970) / 1000
+                    rate = random.randint(760, 970) / 1000
                 if datetime.now().hour in [0, 3, 6, 9, 12, 15, 18, 21] and datetime.now().minute == 0:
                     if s < 0.3:
                         type = 'I'
@@ -211,7 +211,7 @@ class Economy(commands.Cog):
                         type = 'S'
                     elif s < 1:
                         type = 'SS'
-            if turnip['price'] * rate > random.randint(2000, 2050):
+            if turnip['price'] * rate > random.randint(2000, 3000):
                 rate = 0.97
             if turnip['price'] * rate < random.randint(50, 70):
                 rate = 1.1
