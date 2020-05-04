@@ -2,7 +2,7 @@
 
 Discord Bot for Developers and Enginners
 
-![](https://img.shields.io/badge/Version-0.8.5-green)
+![](https://img.shields.io/badge/Version-0.8.8-green)
 
 ## Developing
 
