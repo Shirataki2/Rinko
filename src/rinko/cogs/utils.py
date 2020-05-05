@@ -5,6 +5,7 @@ import logging
 import asyncio
 import glob
 import random
+import tabulate
 import psutil
 import os
 

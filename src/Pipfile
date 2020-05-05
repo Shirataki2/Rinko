@@ -36,6 +36,8 @@ mecab-python3 = "*"
 selenium = "*"
 durations = "*"
 psutil = "*"
+numpy = "*"
+matplotlib = "*"
 
 [requires]
 python_version = "3.8"

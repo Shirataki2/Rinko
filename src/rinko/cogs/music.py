@@ -35,8 +35,6 @@ class Music(commands.Cog):
         self.rinko: Rinko = bot
         self.voice_states = {}
 
-        self.heartbert.start()
-
     def get_voice_state(self, ctx: commands.Context):
         state = self.voice_states.get(ctx.guild.id)
         if not state:
@@ -246,7 +244,7 @@ class Music(commands.Cog):
             else:
                 song = Song(source)
                 await ctx.voice_state.queue.put(song)
-                await ctx.send('Added the following songs to the playlist.\n{}'.format(str(source)))
+                await ctx.send('__**Added the following songs to the playlist.**__\n{}'.format(str(source)))
 
     @join.before_invoke
     @play.before_invoke
@@ -257,16 +255,6 @@ class Music(commands.Cog):
         if ctx.voice_client:
             if ctx.voice_client.channel != ctx.author.voice.channel:
                 raise commands.CommandError('Join the same VC!')
-
-    @tasks.loop(seconds=30)
-    async def heartbert(self, ctx):
-        for voice_state in self.voice_states.values():
-            for song in voice_state.queue:
-                if (sm := song.source.get('webpage_url_basename')) and sm[:2] == 'sm':
-                    url = f'https://www.nicovideo.jp/watch/{sm}'
-                    self.rinko.driver.get(url)
-                    await asyncio.sleep(2)
-
 
 def setup(bot):
     bot.add_cog(Music(bot))

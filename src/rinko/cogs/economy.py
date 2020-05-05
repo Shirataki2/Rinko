@@ -4,8 +4,10 @@ from discord.ext import commands, tasks
 import logging
 import asyncio
 import os
+import io
 import sys
 import random
+import matplotlib.pyplot as plt
 from datetime import datetime
 
 import rinko
@@ -48,6 +50,16 @@ class Economy(commands.Cog):
         if wallet := await self.get_user_wallet(guild, user):
             if (amount := wallet['turnip']) > 0:
                 await self.rinko.set(f'UPDATE wallet SET money = money + {amount * per_turnip}, turnip = turnip - {amount} WHERE guild = {guild.id} AND user = {user.id};')
+                return True
+            else:
+                return False
+        else:
+            return False
+
+    async def sell_subroutine_rotten(self, guild: discord.Guild, user: discord.Member):
+        if wallet := await self.get_user_wallet(guild, user):
+            if (amount := wallet['rotten_turnip']) > 0:
+                await self.rinko.set(f'UPDATE wallet SET money = money + {amount}, rotten_turnip = 0 WHERE guild = {guild.id} AND user = {user.id};')
                 return True
             else:
                 return False
@@ -119,9 +131,9 @@ class Economy(commands.Cog):
             return await ctx.send(f'You already have an old turnip... Sell it all first, then buy it!')
         if await self.buy_subroutine(ctx.guild, ctx.author, turnip["price"], amount):
             m = await self.get_user_wallet(ctx.guild, ctx.author)
-            return await ctx.send(f'You bought {amount} turnips!\n 💴: **{m["money"]}**\n {self.emoji}: **{m["turnip"]}**\n 💴 / {self.emoji} = **{turnip["price"]}**')
+            return await ctx.send(f'You bought **{amount}** turnips and spent **{round(amount * turnip["price"])}**Bells!\n 💴: **{m["money"]}**\n {self.emoji}: **{m["turnip"]}**\n 💴 / {self.emoji} = **{turnip["price"]}**')
         else:
-            return await ctx.send(f'You don\'t have enough money to buy it!\nYou have **{m["money"] if m else 0}** Bells. But **{amount}** * {self.emoji} **{turnip["price"]}** = **{amount * turnip["price"]}** Bells Needed')
+            return await ctx.send(f'You don\'t have enough money to buy it!\nYou have **{m["money"] if m else 0}** Bells. But **{amount}** * {self.emoji} (**{turnip["price"]}**) = **{amount * turnip["price"]}** Bells Needed')
 
     @commands.command()
     async def sell(self, ctx: commands.Context):
@@ -131,13 +143,37 @@ class Economy(commands.Cog):
         self.emoji = self.rinko.get_emoji(706946880810254436)
         turnip = await self.get_turnip()
         m = await self.get_user_wallet(ctx.guild, ctx.author)
-        if m.get('turnip') <= 0:
-            return await ctx.send(f'Well, apparently, you don\'t have any turnips!')
         if await self.sell_subroutine(ctx.guild, ctx.author, turnip["price"]):
             m2 = await self.get_user_wallet(ctx.guild, ctx.author)
-            return await ctx.send(f'You sold {m["turnip"]} turnips and earn **{m["turnip"] * turnip["price"]}** Bells!\n 💴: **{m2["money"]}**\n {self.emoji}: **0**\n 💴 / {self.emoji} = **{turnip["price"]}**')
+            return await ctx.send(f'You sold **{m["turnip"]}** turnips and earn **{m["turnip"] * turnip["price"]}** Bells!\n 💴: **{m2["money"]}**\n {self.emoji}: **0**\n 💴 / {self.emoji} = **{turnip["price"]}**')
         else:
-            return await ctx.send(f'Well, apparently, you don\'t have any turnips!')
+            await ctx.send(f'Well, apparently, you don\'t have any fresh turnips!')
+        if await self.sell_subroutine_rotten(ctx.guild, ctx.author):
+            m3 = await self.get_user_wallet(ctx.guild, ctx.author)
+            return await ctx.send(f'You sold **{m["rotten_turnip"]}** rotten turnips and earn **{m["rotten_turnip"]}** Bells!\n   💴: **{m3["money"]}**\n 💩: **0**\n 💴 / 💩 = **1**')
+        else:
+            return
+
+    @commands.command()
+    async def chart(self, ctx: commands.Context):
+        '''
+        Display the price movement of the turnip.
+        '''
+        plt.style.use('dark_background')
+        result = await self.rinko.get(f'SELECT * FROM turnip ORDER BY date DESC LIMIT 24;')
+        xs = [r.get('date') for r in result]
+        ys = [r.get('price') for r in result]
+        fig = plt.figure(figsize=(16, 7))
+        plt.grid()
+        plt.title('Turnip price movement.', fontsize=24, fontname="serif")
+        plt.plot(xs, ys, marker='o')
+        for x, y in zip(xs, ys):
+            plt.text(x, y, y, ha='right', va='bottom')
+        tempfile = io.BytesIO()
+        plt.savefig(tempfile, format='png')
+        tempfile.seek(0)
+        plt.close(fig)
+        await ctx.send(file=discord.File(tempfile, filename='chart.png'))
 
 
     @tasks.loop(minutes=1)
@@ -154,7 +190,7 @@ class Economy(commands.Cog):
                     rate = random.randint(940, 997) / 1000
                 else:
                     rate = random.randint(995, 1038) / 1000
-                if datetime.now().hour in [0, 6, 12, 18] and datetime.now().minute == 0:
+                if datetime.now().hour in [0, 4, 12, 22] and datetime.now().minute == 0:
                     if s < 0.5:
                         type = 'I'
                     elif s < 0.55:
@@ -180,13 +216,13 @@ class Economy(commands.Cog):
                     elif s < 1:
                         type = 'SS'
             if type == 'S':
-                if r < 0.3:
+                if r < 0.4:
                     rate = random.randint(810, 970) / 1000
-                elif r < 0.9:
-                    rate = random.randint(1030, 1190) / 1000
+                elif r < 0.8:
+                    rate = random.randint(1030, 1120) / 1000
                 else:
                     rate = random.randint(950, 1050) / 1000
-                if datetime.now().hour in [0, 6, 12, 18] and datetime.now().minute == 0:
+                if datetime.now().hour in [0, 3, 6, 9, 12, 15, 18, 21] and datetime.now().minute == 0:
                     if s < 0.1:
                         type = 'I'
                     elif s < 0.6:
@@ -196,13 +232,11 @@ class Economy(commands.Cog):
                     elif s < 1:
                         type = 'SS'
             if type == 'SS':
-                if r < 0.1:
-                    rate = random.randint(994, 1004) / 1000
-                elif r < 0.58:
-                    rate = random.randint(1060, 1160) / 1000
+                if r < 0.5:
+                    rate = random.randint(1060, 1240) / 1000
                 else:
-                    rate = random.randint(760, 970) / 1000
-                if datetime.now().hour in [0, 3, 6, 9, 12, 15, 18, 21] and datetime.now().minute == 0:
+                    rate = random.randint(760, 900) / 1000
+                if datetime.now().minute == 0:
                     if s < 0.3:
                         type = 'I'
                     elif s < 0.8:
