@@ -45,7 +45,7 @@ Table(
 
 Table(
     'wallet', meta,
-    Column('guild', String(64), unique=True, nullable=False),
+    Column('guild', String(64), nullable=False),
     Column('user', String(64), nullable=False),
     Column('money', Integer(), nullable=False),
     Column('turnip', Integer(), nullable=False),

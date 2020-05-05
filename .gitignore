@@ -129,6 +129,8 @@ dmypy.json
 .pyre/
 
 tmp
-config.ini
-db/versions/**
-db/alembic.ini
+config**.ini
+alembic/versions/**
+alembic/alembic.ini
+db/data/**
+**/init-database.sh

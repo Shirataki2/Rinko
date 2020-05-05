@@ -1,0 +1,40 @@
+version: '3'
+services:
+    mysql:
+        image: mysql:8.0
+        container_name: mysql
+        restart: always
+        environment:
+            MYSQL_DATABASE: rinko
+            MYSQL_USER: docker
+            MYSQL_PASSWORD: wK0Ak?ci9p
+            MYSQL_ROOT_PASSWORD: wK0Ak?ci9p
+            TZ: 'Asia/Tokyo'
+        command: mysqld --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+        volumes:
+        - db-data:/var/lib/mysql
+        - ./db/my.cnf:/etc/mysql/conf.d/my.cnf
+        - ./db/sql:/docker-entrypoint-initdb.d
+        ports:
+        - 13306:3306
+        networks:
+            - app-net
+
+    app:
+        build: ./src
+        tty: true
+        container_name: app
+        entrypoint: python3.8 -m rinko config.prod.ini
+        #entrypoint: bash
+        links:
+            - "mysql"
+        networks:
+            - app-net
+
+networks:
+  app-net:
+    driver: bridge
+
+volumes:
+  db-data:
+    driver: local

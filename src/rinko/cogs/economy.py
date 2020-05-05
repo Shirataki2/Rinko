@@ -217,7 +217,7 @@ class Economy(commands.Cog):
                         type = 'SS'
             if type == 'S':
                 if r < 0.4:
-                    rate = random.randint(810, 970) / 1000
+                    rate = random.randint(910, 970) / 1000
                 elif r < 0.8:
                     rate = random.randint(1030, 1120) / 1000
                 else:

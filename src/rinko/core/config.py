@@ -12,6 +12,7 @@ class Config:
     # DB
     mysql_user = ''
     mysql_passwd = ''
+    mysql_port = '3306'
     mysql_host = 'localhost'
     mysql_db = 'rinko'
     # KEYS
