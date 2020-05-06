@@ -2,6 +2,7 @@ import discord
 from discord.ext import commands
 
 import logging
+import typing
 import asyncio
 import glob
 import random
@@ -179,6 +180,41 @@ class Utils(commands.Cog):
         await ctx.send(embed=embed)
 
     @commands.command()
+    @commands.guild_only()
+    async def grep(self, ctx: commands.Context, *, query):
+        channel: discord.TextChannel = ctx.channel
+        j = 0; i = 0
+        messages = []
+        with ctx.typing():
+            messages.append(await ctx.send(f'Search: __**{query}**__ (Up to 30)'))
+            async for message in channel.history(limit=500):
+                i += 1
+                if i in [1, 2]: continue
+                message: discord.Message
+                try:
+                    words = self.rinko.tagger.parse(message.content).split(' ')
+                except:
+                    continue
+                q = self.rinko.tagger.parse(query).split(' ')
+                if set(q).issubset(set(words)):
+                    message = await ctx.send(embed=await self.generate_message_embed(message))
+                    j += 1
+                    messages.append(message)
+                if j == 30:
+                    break
+        if j == 0:
+            await ctx.send('Not Found')
+        else:
+            messages.append(await ctx.send('Your search has been completed.\nClear the search result by sending any string.\nEven after 60 seconds, those will be deleted.'))
+            try:
+                messages.append(await self.rinko.wait_for('message', check=lambda message: message.author == ctx.author, timeout=60))
+            except:
+                pass
+            finally:
+                for message in messages:
+                    await message.delete()
+
+    @commands.command()
     async def set_autoquote(self, ctx:commands.Context, flag=True):
         '''
         Enable/disable the function to say the content of a message automatically when a Discord message link is pasted.
@@ -223,6 +259,19 @@ class Utils(commands.Cog):
                 text="{0} at #{1} ({2})".format(message.guild.name, channel.name, timestamp)
             )
             return embed
+
+    async def generate_message_embed(self, message: discord.Message):
+        channel: discord.TextChannel = message.channel
+        embed = discord.Embed()
+        embed.set_author(name=message.author.name, icon_url=message.author.avatar_url)
+        embed.description = message.content + "\n[original message]({0})".format(message.jump_url)
+        if len(message.attachments) > 0:
+            embed.set_image(url=message.attachments[0].url)
+        timestamp = message.created_at.strftime("%Y/%m/%d %H:%M:%S")
+        embed.set_footer(
+            text="{0} at #{1} ({2})".format(message.guild.name, channel.name, timestamp)
+        )
+        return embed
 
     @commands.command()
     @commands.cooldown(1, 180, type=commands.BucketType.guild)

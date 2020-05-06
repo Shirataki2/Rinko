@@ -134,3 +134,5 @@ alembic/versions/**
 alembic/alembic.ini
 db/data/**
 **/init-database.sh
+src/run
+backup

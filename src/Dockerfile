@@ -18,9 +18,9 @@ RUN cd ./Python-3.8.2 && \
 
 RUN yum -y update
 RUN yum -y install epel-release
-RUN rpm --import http://li.nux.ro/download/nux/RPM-GPG-KEY-nux.ro
-RUN rpm -Uvh http://li.nux.ro/download/nux/dextop/el7/x86_64/nux-dextop-release-0-1.el7.nux.noarch.rpm
-RUN yum -y install ffmpeg ffmpeg-devel
+RUN yum-config-manager --add-repo=http://negativo17.org/repos/epel-multimedia.repo
+RUN yum-config-manager --disable epel-multimedia
+RUN yum -y install --enablerepo=epel-multimedia ffmpeg ffmpeg-devel
 
 ## MECAB ##
 
@@ -54,13 +54,6 @@ RUN yum install -y https://centos7.iuscommunity.org/ius-release.rpm
 RUN yum install -y python36u python36u-libs python36u-devel python36u-pip
 RUN python3.6 -m pip install --upgrade pip
 
-## DOCKER ##
-
-RUN yum remove docker docker-client docker-client-latest docker-common docker-latest docker-latest-logrotate docker-logrotate docker-engine
-RUN yum install -y yum-utils device-mapper-persistent-data lvm2
-RUN yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
-RUN yum install -y docker-ce docker-ce-cli containerd.io
-
 ## MYSQL CLIENT ##
 RUN rpm -Uvh https://dev.mysql.com/get/mysql80-community-release-el7-1.noarch.rpm
 RUN yum -y install mysql-community-client
@@ -72,6 +65,16 @@ ENV LANG="ja_JP.UTF-8" \
     LANGUAGE="ja_JP:ja" \
     LC_ALL="ja_JP.UTF-8"
 
+RUN yum remove docker docker-client docker-client-latest docker-common docker-latest docker-latest-logrotate docker-logrotate docker-engine
+RUN yum install -y yum-utils device-mapper-persistent-data lvm2
+RUN yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
+RUN yum install -y docker-ce docker-ce-cli containerd.io && \
+    yum clean all && \
+    systemctl enable docker
+
 COPY . /app/
 WORKDIR /app
 RUN pip3.8 install -r requirements.txt
+
+VOLUME [ "/sys/fs/cgroup" ]
+CMD ["/usr/sbin/init"]

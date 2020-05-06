@@ -1,5 +1,5 @@
 import discord
-from discord.ext import commands
+from discord.ext import commands, tasks
 
 import logging
 import asyncio
@@ -26,7 +26,8 @@ from rinko.core.commands.utils import mention_to_id
 from rinko.core.constant import *
 
 logger = get_module_logger(__name__)
-root = os.path.join(os.path.dirname(os.path.abspath(rinko.__file__)), os.pardir)
+root = '/'.join(os.path.dirname(os.path.abspath(rinko.__file__)).split('/')[:-1])
+root_host = '/root/discord-dev/src'
 
 class Command(commands.Cog):
     def __init__(self, bot):
@@ -149,73 +150,76 @@ class Command(commands.Cog):
                     file = discord.File(image, filename=f'image{ext}')
                     embed.set_image(url=f'attachment://image{ext}')
                     await ctx.send(file=file, embed=embed)
-            # await ctx.send(f'Elapsed Time: **{elps:.3f}**s (Includes compile time.)')
-
-            shutil.rmtree(f'{root}/run')
 
     async def get_docker_cmd(self, lang, source):
         lang = lang.lower()
-        docker_base = f'docker run -e LANG=C --network none --cpu-period=50000 --cpu-quota=25000 --cpuset-cpus=0 --ulimit fsize=5000000:5000000 --oom-kill-disable --pids-limit=64 --rm -v {root}/run/src:/src -v {root}/run/images:/images -v {root}/run/media:/media -w /src --memory=128m --memory-swap=256m '
+        print(f'{root}/run/src')
+        docker_base = f'docker run -e LANG=C --network none --cpu-period=50000 --cpu-quota=25000 --cpuset-cpus=0 --ulimit fsize=5000000:5000000 --oom-kill-disable --pids-limit=64 --rm -v {root_host}/run/src:/src -v {root_host}/run/images:/images -v {root_host}/run/media:/media -w /src --memory=128m --memory-swap=256m '
         if lang in ['cpp', 'c++']:
             logger.info('Run C++ Code')
             async with aiofiles.open(f'{root}/run/src/Main.cpp', 'w') as f:
                 await f.write(source)
-                docker_cmd = f'{docker_base}gcc:9.2 timeout -sKILL 20s bash -c "g++ -std=gnu++03 -O2 Main.cpp;timeout -sKILL 5s ./a.out <stdin"'
+            docker_cmd = f'{docker_base}gcc:9.2 timeout -sKILL 20s bash -c "g++ -std=gnu++03 -O2 Main.cpp;timeout -sKILL 5s /src/a.out </src/stdin"'
         elif lang in ['c']:
             logger.info('Run C Code')
             async with aiofiles.open(f'{root}/run/src/Main.c', 'w') as f:
                 await f.write(source)
-                docker_cmd = f'{docker_base}gcc:9.2 timeout -sKILL 20s bash -c "gcc -std=gnu11 -O2 Main.c;timeout -sKILL 5s ./a.out <stdin"'
+            docker_cmd = f'{docker_base}gcc:9.2 timeout -sKILL 20s bash -c "gcc -std=gnu11 -O2 Main.c;timeout -sKILL 5s /src/a.out </src/stdin"'
         elif lang in ['py', 'python']:
             logger.info('Run Python Code')
             async with aiofiles.open(f'{root}/run/src/Main.py', 'w') as f:
                 await f.write(source)
-                docker_cmd = f'{docker_base}python_extended:3.8 timeout -sKILL 5s bash -c "cat stdin|python3.8 -B Main.py"'
+            docker_cmd = f'{docker_base}python:3.8 timeout -sKILL 5s bash -c "cat /src/stdin|python3.8 -B /src/Main.py"'
         elif lang in ['js', 'javascript']:
             logger.info('Run JS Code')
             async with aiofiles.open(f'{root}/run/src/Main.js', 'w') as f:
                 await f.write(source)
-                docker_cmd = f'{docker_base}node:14.0 timeout -sKILL 5s bash -c "cat stdin|node Main.js"'
+            docker_cmd = f'{docker_base}node:14.0 timeout -sKILL 5s bash -c "cat /src/stdin|node /src/Main.js"'
         elif lang in ['rb', 'ruby']:
             logger.info('Run Ruby Code')
             async with aiofiles.open(f'{root}/run/src/Main.rb', 'w') as f:
                 await f.write(source)
-                docker_cmd = f'{docker_base}ruby:2.7.1 timeout -sKILL 5s bash -c "cat stdin|ruby --disable-gems ./Main.rb"'
+            docker_cmd = f'{docker_base}ruby:2.7.1 timeout -sKILL 5s bash -c "cat /src/stdin|ruby --disable-gems /src/Main.rb"'
         elif lang in ['hs', 'haskell']:
             logger.info('Run Haskell Code')
             async with aiofiles.open(f'{root}/run/src/Main.hs', 'w') as f:
                 await f.write(source)
-                docker_cmd = f'{docker_base}haskell:8.8.3 timeout -sKILL 20s bash -c "ghc -o ./a.out -O2 ./Main.hs >/dev/null;timeout -sKILL 5s ./a.out <stdin"'
+            docker_cmd = f'{docker_base}haskell:8.8.3 timeout -sKILL 20s bash -c "ghc -o /src/a.out -O2 /src/Main.hs >/dev/null;timeout -sKILL 5s /src/a.out </src/stdin"'
         elif lang in ['rs', 'rust']:
             logger.info('Run Rust Code')
             async with aiofiles.open(f'{root}/run/src/Main.rs', 'w') as f:
                 await f.write(source)
-                docker_cmd = f'{docker_base}rust:1.43.0 timeout -sKILL 20s bash -c "rustc -O -o ./a.out ./Main.rs >/dev/null;timeout -sKILL 5s ./a.out <stdin"'
+            docker_cmd = f'{docker_base}rust:1.43.0 timeout -sKILL 20s bash -c "rustc -O -o /src/a.out /src/Main.rs >/dev/null;timeout -sKILL 5s /src/a.out </src/stdin"'
         elif lang in ['sh', 'bash', 'zsh', 'shell']:
             logger.info('Run Shell Code')
             ext = 'zsh' if lang == 'zsh' else 'sh'
             bin_ = 'zsh' if lang == 'zsh' else 'bash'
             async with aiofiles.open(f'{root}/run/src/Main.{ext}', 'w') as f:
                 await f.write(source)
-                docker_cmd = f'{docker_base}theoldmoon0602/shellgeibot:20200430 timeout -sKILL 5s bash -c "{bin_} Main.{ext} < stdin"'
+            docker_cmd = f'{docker_base}theoldmoon0602/shellgeibot:20200430 timeout -sKILL 5s bash -c "{bin_} /src/Main.{ext} < /src/stdin"'
         elif lang in ['java']:
             logger.info('Run Java Code')
             async with aiofiles.open(f'{root}/run/src/Main.java', 'w') as f:
                 await f.write(source)
-                docker_cmd = f'{docker_base}openjdk:14 timeout -sKILL 20s bash -c "javac Main.java;timeout -sKILL 5s java -Xss128M Main <stdin"'
+            docker_cmd = f'{docker_base}openjdk:14 timeout -sKILL 20s bash -c "javac /src/Main.java;timeout -sKILL 5s java -Xss128M /src/Main </src/stdin"'
         elif lang in ['go', 'golang']:
             logger.info('Run Go Code')
             async with aiofiles.open(f'{root}/run/src/Main.go', 'w') as f:
                 await f.write(source)
-                docker_cmd = f'{docker_base}golang:1.14 timeout -sKILL 20s bash -c "go build -o ./a.out ./Main.go;timeout -sKILL 5s ./a.out <stdin"'
+            docker_cmd = f'{docker_base}golang:1.14 timeout -sKILL 20s bash -c "go build -o /src/a.out /src/Main.go;timeout -sKILL 5s /src/a.out </src/stdin"'
         elif lang in ['php']:
             logger.info('Run PHP Code')
             async with aiofiles.open(f'{root}/run/src/Main.php', 'w') as f:
                 await f.write(source)
-                docker_cmd = f'{docker_base}php:7.4 timeout -sKILL 5s bash -c "cat stdin|php Main.php"'
+            docker_cmd = f'{docker_base}php:7.4 timeout -sKILL 5s bash -c "cat /src/stdin|php /src/Main.php"'
         else:
             raise commands.BadArgument(f'Unsurpported Extension: {lang}')
         return docker_cmd
+
+    @tasks.loop(hours=6)
+    async def loop(self):
+        shutil.rmtree(f'{root}/run')
+
 
 
 def setup(bot):

@@ -160,10 +160,10 @@ class Economy(commands.Cog):
         Display the price movement of the turnip.
         '''
         plt.style.use('dark_background')
-        result = await self.rinko.get(f'SELECT * FROM turnip ORDER BY date DESC LIMIT 24;')
+        result = await self.rinko.get(f'SELECT * FROM turnip ORDER BY date DESC LIMIT 16;')
         xs = [r.get('date') for r in result]
         ys = [r.get('price') for r in result]
-        fig = plt.figure(figsize=(16, 7))
+        fig = plt.figure(figsize=(18, 7))
         plt.grid()
         plt.title('Turnip price movement.', fontsize=24, fontname="serif")
         plt.plot(xs, ys, marker='o')
@@ -181,6 +181,7 @@ class Economy(commands.Cog):
         if datetime.now().minute in [0, 30]:
             turnip = await self.get_turnip()
             type = turnip['type']
+            print(turnip)
             r = random.random()
             s = random.random()
             if type == 'D':

@@ -57,3 +57,5 @@ CREATE TABLE IF NOT EXISTS `turnip` (
     `type` VARCHAR(64) NOT NULL,
     `date` DATETIME
 );
+
+INSERT INTO `turnip` (`price`, `type`, `date`) VALUES (500, 'I', NOW());

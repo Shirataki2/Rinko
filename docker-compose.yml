@@ -24,12 +24,17 @@ services:
         build: ./src
         tty: true
         container_name: app
-        entrypoint: python3.8 -m rinko config.prod.ini
-        #entrypoint: bash
+        command: /usr/sbin/init
+        entrypoint: /app/docker-entrypoint.sh
+        privileged: true
         links:
             - "mysql"
         networks:
             - app-net
+        volumes:
+            - /sys/fs/cgroup:/sys/fs/cgroup:ro
+            - /var/run/docker.sock:/var/run/docker.sock
+            - ./src:/app
 
 networks:
   app-net:

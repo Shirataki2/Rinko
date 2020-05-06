@@ -37,6 +37,7 @@ durations = "*"
 psutil = "*"
 numpy = "*"
 matplotlib = "*"
+whoosh = "*"
 
 [requires]
 python_version = "3.8"
