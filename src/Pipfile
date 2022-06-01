@@ -28,7 +28,7 @@ python-i18n = {extras = ["yaml"],version = "*"}
 tabulate = "*"
 aiofiles = "~=0.5.0"
 pillow = "~=7.1"
-httpx = "~=0.12"
+httpx = "~=0.23"
 youtube-dl = "*"
 pynacl = "*"
 beautifulsoup4 = "*"
