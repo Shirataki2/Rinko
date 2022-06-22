@@ -27,7 +27,7 @@ markupsafe==1.1.1
 matplotlib==3.2.1
 mecab-python3==0.996.5
 multidict==4.7.5
-numpy==1.18.4
+numpy==1.22.0
 pillow==7.1.2
 psutil==5.7.0
 pycparser==2.20
