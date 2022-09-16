@@ -22,7 +22,7 @@ httpx==0.12.1
 hyperframe==5.2.0
 idna==2.9
 kiwisolver==1.2.0
-mako==1.1.2
+mako==1.2.2
 markupsafe==1.1.1
 matplotlib==3.2.1
 mecab-python3==0.996.5
